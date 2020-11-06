@@ -36,6 +36,7 @@ def main(fname):
     niMax = obs['root']['niMax']
     sumZeta = obs['root']['sumZeta']
     nodesToProcess = [obs['root']]
+    
     #print(nodesToProcess[0].keys())
     aux = ['graph G {','graph [ordering="out"];']
     edges = []

@@ -185,6 +185,7 @@ def buildTree(seed,dualVariables,inequalities,nuOmega,h,inputGraph,debug):
         #exchance system by its solution
         positionVertices(currentNode['solution'],currentNode['partition'])
 
+        
         #compute extra attribs
         currentNode['ni'] = computeNi(inputGraph,currentNode['partition'])
         ##TODO reuse the sum from parent node

@@ -92,6 +92,36 @@ def computeNi(graph,partition):
       counter += 1
   return counter
 
+def computeCutSize(graph,partition):
+  currentCutSize = 0
+  for edge in graph:
+    if (edge[0] in partition) and (edge[1] in partition) and not(partition[edge[0]] == partition[edge[1]]):
+      currentCutSize += 1
+        
+  return currentCutSize
+
+
+def computeSumOmega(node):
+  #
+  return
+  slackness = {}
+  sumOmega = 0
+  for key in tmp:
+    if not (key in constraints):
+      halt
+    #
+    constraint = constraints[key]
+    #test slackness
+    sum = 0
+    for i,pr in enumerate(constraint['variables']):
+      sum += (values[tuple(pr)]*constraint['signs'][i])
+    if sum < constraint['rightSide']:
+      slackness[key] = 'L'
+      sumOmega += (2*tmp[key])
+    else:
+      slackness[key] = 'T'
+    print(sumOmega)
+
 def buildTree(seed,dualVariables,inequalities,nuOmega,h,inputGraph,debug):
     debug = False
     niMax = len(inputGraph) - nuOmega
@@ -99,8 +129,15 @@ def buildTree(seed,dualVariables,inequalities,nuOmega,h,inputGraph,debug):
     levSize      = {}
     visitedNodes = {}
     root = {'seed': seed, 'partition':seed, 'isValid': False, 
-          'yaccum':0, 'xaccum':0,'id':1,'leftC':None,'rightC':None,'ni':computeNi(inputGraph,seed),
-          'system':buildSeedSystem(seed,variables), 'newVariables':[]}
+            'yaccum':0, 'xaccum':0,'id':1,'leftC':None,'rightC':None,'ni':computeNi(inputGraph,seed),
+            'system':buildSeedSystem(seed,variables), 'newVariables':[]}
+
+    #
+    auxDictDualVariables = dict(dualVariables)
+    sumZeta = 0
+    for key in inequalities:
+      if 'n' in key and key in auxDictDualVariables:
+        sumZeta += 2 * auxDictDualVariables[key]
     
     #print(root['system'])
     nodesToProcess = []
@@ -127,7 +164,8 @@ def buildTree(seed,dualVariables,inequalities,nuOmega,h,inputGraph,debug):
         #exchance system by its solution
         positionVertices(currentNode['solution'],currentNode['partition'])
         currentNode['ni'] = computeNi(inputGraph,currentNode['partition'])
-
+        computeSumOmega(currentNode)
+        
         if len(currentNode['partition']) == 4*h:
           if debug:
             print('****** FOUND TERMINAL NODE')
@@ -146,6 +184,7 @@ def buildTree(seed,dualVariables,inequalities,nuOmega,h,inputGraph,debug):
             if cutSize == nuOmega:
               #found solution
               currentNode['partition'] = partTest
+              currentNode['optimum'] = True
               return (True,currentNode,levSize,root)
             #
             partTest[4*h+1] = 1
@@ -154,6 +193,7 @@ def buildTree(seed,dualVariables,inequalities,nuOmega,h,inputGraph,debug):
             if cutSize == nuOmega:
               #found solution
               currentNode['partition'] = partTest
+              currentNode['optimum'] = True
               return (True,currentNode,levSize,root)
             #
             continue
@@ -300,7 +340,7 @@ def mainAlgorithm(dualVariables,inequalities,nuOmega,h,inputGraphEdges,inputGrap
     
     for seed in seeds:
         #build root
-        print(' -------- Processing Seed',seed)
+        print('Nu Omega', nuOmega,'-------- Processing Seed',seed)
         found,solution,treeLevels,rootNode = buildTree(seed,dualVariables,inequalities,nuOmega,h,inputGraphEdges,verbose)
         #print(treeLevels)
         maxWidth = treeLevels[max(treeLevels, key=treeLevels.get)]
